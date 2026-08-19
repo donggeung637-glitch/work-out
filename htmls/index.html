@@ -1,0 +1,966 @@
+html_code = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIT-EVO : 개인 맞춤형 피트니스 AI 보조</title>
+  <!-- Chart.js CDN for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Global Reset & Dark Theme Styling */
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --accent-color: #38bdf8;
+      --accent-hover: #0284c7;
+      --neon-green: #22c55e;
+      --neon-orange: #f97316;
+      --neon-purple: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding-bottom: 50px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Header & Title Section */
+    header {
+      text-align: center;
+      padding: 24px 16px;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: var(--accent-color);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 6px;
+    }
+
+    /* Condition Banner (Mandatory 3 Rules) */
+    .rule-banner {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--accent-color);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .rule-banner h3 {
+      font-size: 1rem;
+      color: var(--accent-color);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rule-banner ul {
+      list-style: none;
+      padding-left: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .rule-banner li {
+      font-size: 0.88rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rule-banner li i {
+      color: var(--neon-green);
+    }
+
+    /* Navigation Tabs */
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: var(--card-bg);
+      padding: 6px;
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-color);
+      color: #0f172a;
+    }
+
+    /* Card UI Component */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 10px;
+    }
+
+    /* Form Layout & Inputs */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-color);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent-color);
+    }
+
+    /* Checkbox & Multi-selection Chips */
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .chip-checkbox {
+      display: none;
+    }
+
+    .chip-label {
+      padding: 8px 14px;
+      background: var(--bg-color);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+      color: var(--text-muted);
+    }
+
+    .chip-checkbox:checked + .chip-label {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: #0f172a;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-success {
+      background: var(--neon-green);
+      color: #0f172a;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: var(--text-main);
+    }
+
+    /* Status Badges */
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .badge-primary { background: rgba(56, 189, 248, 0.2); color: var(--accent-color); border: 1px solid var(--accent-color); }
+    .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--neon-green); border: 1px solid var(--neon-green); }
+    .badge-orange { background: rgba(249, 115, 22, 0.2); color: var(--neon-orange); border: 1px solid var(--neon-orange); }
+    .badge-purple { background: rgba(168, 85, 247, 0.2); color: var(--neon-purple); border: 1px solid var(--neon-purple); }
+
+    /* Alert Boxes */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger);
+      color: #fca5a5;
+    }
+
+    .alert-success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--neon-green);
+      color: #86efac;
+    }
+
+    /* Routine Display Section */
+    .routine-header {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .exercise-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .exercise-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .exercise-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Set Recording Table */
+    .set-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .set-table th, .set-table td {
+      padding: 6px 8px;
+      text-align: center;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .set-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .set-table input {
+      width: 60px;
+      text-align: center;
+      padding: 4px;
+      font-size: 0.85rem;
+    }
+
+    .set-table input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--neon-green);
+      cursor: pointer;
+    }
+
+    /* Diet Plan Styling */
+    .diet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .diet-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .diet-card h4 {
+      color: var(--accent-color);
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      margin-top: 16px;
+    }
+
+    /* Tab Display Logic */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Footer Legal Notice */
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 30px;
+      padding: 16px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    /* Responsive Improvements */
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .routine-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header>
+    <h1><i class="fa-solid fa-dumbbell"></i> FIT-EVO</h1>
+    <p>성장기/학생 맞춤형 점진적 과부하 운동 및 영양 보조 관리 시스템</p>
+  </header>
+
+  <div class="container">
+
+    <!-- Mandatory 3 Key Conditions Banner -->
+    <div class="rule-banner">
+      <h3><i class="fa-solid fa-shield-halved"></i> 안전하고 지속 가능한 운동을 위한 3가지 핵심 규칙</h3>
+      <ul>
+        <li><i class="fa-solid fa-check-circle"></i> <strong>올바른 자세 우선:</strong> 과도한 중량 욕심을 버리고, 정확한 가동범위와 근육 자극에 집중합니다.</li>
+        <li><i class="fa-solid fa-check-circle"></i> <strong>성장기 균형 영양:</strong> 극단적인 단식이나 무리한 감량을 금지하며, 충분한 탄수화물/단백질을 섭취합니다.</li>
+        <li><i class="fa-solid fa-check-circle"></i> <strong>점진적 과부하:</strong> 세트 수행 결과 기록을 바탕으로 안전하게 천천히 운동 강도를 높여갑니다.</li>
+      </ul>
+    </div>
+
+    <!-- Alert Box for Validation -->
+    <div id="alertBox" class="alert alert-danger">
+      <i class="fa-solid fa-triangle-exclamation"></i> 모든 필수 입력 항목을 정확히 입력해주세요!
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-profile')"><i class="fa-solid fa-user-gear"></i> 정보 설정</button>
+      <button class="tab-btn" onclick="switchTab('tab-routine')"><i class="fa-solid fa-list-check"></i> 오늘의 루틴</button>
+      <button class="tab-btn" onclick="switchTab('tab-diet')"><i class="fa-solid fa-utensils"></i> 맞춤 식단 Guide</button>
+      <button class="tab-btn" onclick="switchTab('tab-history')"><i class="fa-solid fa-chart-line"></i> 운동 기록 및 성장</button>
+    </div>
+
+    <!-- TAB 1: PROFILE & PREFERENCES INPUT -->
+    <div id="tab-profile" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span><i class="fa-solid fa-sliders"></i> 신체 정보 및 운동 조건 입력</span>
+          <span class="badge badge-primary">Step 1</span>
+        </div>
+
+        <form id="profileForm" onsubmit="event.preventDefault(); generateRoutine();">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="age">나이 (세)</label>
+              <input type="number" id="age" placeholder="예: 17" min="10" max="100" required value="17">
+            </div>
+
+            <div class="form-group">
+              <label for="height">키 (cm)</label>
+              <input type="number" id="height" placeholder="예: 175" min="100" max="230" required value="175">
+            </div>
+
+            <div class="form-group">
+              <label for="weight">몸무게 (kg)</label>
+              <input type="number" id="weight" placeholder="예: 68" min="30" max="200" required value="68">
+            </div>
+
+            <div class="form-group">
+              <label for="bodyType">체형 / 골격 구조</label>
+              <select id="bodyType" required>
+                <option value="ec">외배엽 (마른 체형, 뼈대가 얇음)</option>
+                <option value="meso" selected>중배엽 (골격이 발달하고 근육형)</option>
+                <option value="endo">내배엽 (체지방이 쉽게 쌓이는 체형)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="experience">운동 경력 및 근력 수준</label>
+              <select id="experience" required>
+                <option value="beginner" selected>입문자 (0~3개월, 맨몸/기구 적응 중)</option>
+                <option value="intermediate">초중급자 (3~12개월, 3대 운동 자세 숙지)</option>
+                <option value="advanced">중급자 이상 (1년 이상, 체계적 루틴 수행)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="goal">운동 목표</label>
+              <select id="goal" required>
+                <option value="hypertrophy" selected>근육량 증가 (보디빌딩 / 체중 늘리기)</option>
+                <option value="strength">근력 강화 (3대 운동 수행능력 증가)</option>
+                <option value="fatloss">체지방 감소 및 건강 유지</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="weeklyDays">주당 운동 횟수</label>
+              <select id="weeklyDays" required>
+                <option value="3" selected>주 3회 (무분할 / 전신)</option>
+                <option value="4">주 4회 (상/하체 2분할)</option>
+                <option value="5">주 5회 (3분할 순환)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="duration">1회 운동 가능 시간 (분)</label>
+              <select id="duration" required>
+                <option value="40">40분 (바쁜 학생/집중형)</option>
+                <option value="60" selected>60분 (표준 웨이트)</option>
+                <option value="90">90분 (고강도/충분한 휴식)</option>
+              </select>
+            </div>
+
+            <!-- Multi-select Technique Combination -->
+            <div class="form-group full-width">
+              <label>선호하는 운동 테크닉 방식 (복수 선택 가능)</label>
+              <div class="checkbox-group">
+                <input type="checkbox" id="tech-straight" class="chip-checkbox" value="straight" checked>
+                <label for="tech-straight" class="chip-label">일반 세트 (Standard)</label>
+
+                <input type="checkbox" id="tech-drop" class="chip-checkbox" value="drop">
+                <label for="tech-drop" class="chip-label">드롭세트 (Drop Set)</label>
+
+                <input type="checkbox" id="tech-super" class="chip-checkbox" value="super">
+                <label for="tech-super" class="chip-label">슈퍼세트 (Super Set)</label>
+
+                <input type="checkbox" id="tech-compound" class="chip-checkbox" value="compound">
+                <label for="tech-compound" class="chip-label">컴파운드 세트 (Compound Set)</label>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> 맞춤형 루틴 생성하기
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 2: TODAY'S ROUTINE & WORKOUT EXECUTION -->
+    <div id="tab-routine" class="tab-content">
+      <div id="routineContainer">
+        <!-- Routine dynamic cards will be inserted here -->
+        <div class="card" style="text-align: center; padding: 40px 20px;">
+          <i class="fa-solid fa-clipboard-list" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 12px;"></i>
+          <p style="color: var(--text-muted);">아직 생성된 운동 루틴이 없습니다.<br>'정보 설정' 탭에서 필수 항목을 입력하고 루틴을 생성하세요.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DIET GUIDE (GROWTH-ORIENTED) -->
+    <div id="tab-diet" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span><i class="fa-solid fa-utensils"></i> 성장기/목표 맞춤 영양 Guide</span>
+          <span class="badge badge-orange" id="dietTypeBadge">균형 식단</span>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">
+          * 성장기 학생 및 청소년은 극단적인 칼로리 제한이나 단식을 금지합니다. 충분한 탄수화물과 단백질, 필수 지방산을 균형 있게 섭취하여 성장에 지장이 없도록 관리하세요.
+        </p>
+
+        <div id="dietSummary" style="background: var(--bg-color); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.9rem;">
+          <!-- Dynamically populated calorie & macro info -->
+        </div>
+
+        <div class="diet-grid" id="dietPlanGrid">
+          <!-- Meal plan items generated via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: HISTORY & PROGRESS GRAPH -->
+    <div id="tab-history" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span><i class="fa-solid fa-chart-line"></i> 운동 트렌드 & 점진적 과부하 추이</span>
+          <span class="badge badge-success">점진적 발전</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="progressChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span><i class="fa-solid fa-clock-rotate-left"></i> 지난 운동 완료 기록</span>
+          <button class="btn btn-secondary" onclick="exportData()" style="width: auto; padding: 6px 12px; font-size: 0.8rem;">
+            <i class="fa-solid fa-share-nodes"></i> 기록 공유/내보내기
+          </button>
+        </div>
+        <div id="historyLogList">
+          <!-- History items rendered here -->
+          <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 20px;">저장된 완료 기록이 없습니다.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Legal & Privacy Notice Footer -->
+  <footer>
+    <p><i class="fa-solid fa-lock"></i> <strong>개인정보 보호 안내:</strong> FIT-EVO 서비스는 GPS, 카메라, 마이크, 연락처 등 기기 권한을 절대 요구하지 않습니다.</p>
+    <p>모든 입력 정보 및 운동 수행 데이터는 사용자의 브라우저(Local Storage)에 안전하게 보관되며 외부 서버로 전송되지 않습니다.</p>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // State management object
+    let appState = {
+      profile: null,
+      currentRoutine: null,
+      history: []
+    };
+
+    let progressChartInstance = null;
+
+    // Detailed Exercise Database targeting target muscle groups
+    const exerciseDB = {
+      chest: [
+        { name: "바벨 벤치프레스", target: "가슴(전체)", baseWeight: 40, baseReps: 10, restSec: 90, type: "compound" },
+        { name: "인클라인 덤벨 프레스", target: "가슴(상부)", baseWeight: 14, baseReps: 12, restSec: 75, type: "isolation" },
+        { name: "케이블 체스트 플라이", target: "가슴(안쪽)", baseWeight: 10, baseReps: 15, restSec: 60, type: "isolation" }
+      ],
+      back: [
+        { name: "랫 풀 다운", target: "등(광배근)", baseWeight: 35, baseReps: 12, restSec: 75, type: "compound" },
+        { name: "바벨 덤벨 로우", target: "등(중앙/두께)", baseWeight: 30, baseReps: 10, restSec: 75, type: "compound" },
+        { name: "시티드 케이블 로우", target: "등(하부/중앙)", baseWeight: 35, baseReps: 12, restSec: 60, type: "isolation" }
+      ],
+      shoulder: [
+        { name: "오버헤드 숄더 프레스", target: "어깨(전면/측면)", baseWeight: 20, baseReps: 10, restSec: 90, type: "compound" },
+        { name: "사이드 레터럴 레이즈", target: "어깨(측면)", baseWeight: 5, baseReps: 15, restSec: 45, type: "isolation" },
+        { name: "페이스 풀", target: "어깨(후면)", baseWeight: 12, baseReps: 15, restSec: 45, type: "isolation" }
+      ],
+      quads: [
+        { name: "바벨 스쿼트", target: "대퇴사두근", baseWeight: 50, baseReps: 8, restSec: 120, type: "compound" },
+        { name: "레그 프레스", target: "대퇴사두근/둔근", baseWeight: 80, baseReps: 12, restSec: 90, type: "compound" },
+        { name: "레그 익스텐션", target: "대퇴사두근(선택)", baseWeight: 25, baseReps: 15, restSec: 60, type: "isolation" }
+      ],
+      hamstrings: [
+        { name: "루마니안 데드리프트", target: "햄스트링/둔근", baseWeight: 50, baseReps: 10, restSec: 90, type: "compound" },
+        { name: "라잉 레그 컬", target: "햄스트링", baseWeight: 20, baseReps: 12, restSec: 60, type: "isolation" }
+      ],
+      biceps: [
+        { name: "바벨 덤벨 컬", target: "이두근", baseWeight: 10, baseReps: 12, restSec: 60, type: "isolation" },
+        { name: "해머 컬", target: "이두근/상완근", baseWeight: 10, baseReps: 12, restSec: 60, type: "isolation" }
+      ],
+      triceps: [
+        { name: "트라이셉스 케이블 푸쉬다운", target: "삼두근", baseWeight: 20, baseReps: 12, restSec: 60, type: "isolation" },
+        { name: "라잉 트라이셉스 익스텐션", target: "삼두근", baseWeight: 15, baseReps: 10, restSec: 60, type: "isolation" }
+      ],
+      calves_core: [
+        { name: "카프 레이즈", target: "종아리", baseWeight: 30, baseReps: 20, restSec: 45, type: "isolation" },
+        { name: "행잉 레그 레이즈", target: "코어(복근)", baseWeight: 0, baseReps: 15, restSec: 45, type: "isolation" },
+        { name: "플랭크", target: "코어 전체", baseWeight: 0, baseReps: 60, restSec: 45, type: "isolation" }
+      ]
+    };
+
+    // Load saved data on page load
+    window.onload = function() {
+      loadLocalStorage();
+      initChart();
+    };
+
+    // Tab Navigation Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+
+      if(tabId === 'tab-history') {
+        renderHistory();
+        updateChart();
+      }
+    }
+
+    // Generate Custom Workout Routine based on profile logic
+    function generateRoutine() {
+      const age = parseInt(document.getElementById('age').value);
+      const height = parseInt(document.getElementById('height').value);
+      const weight = parseInt(document.getElementById('weight').value);
+      const bodyType = document.getElementById('bodyType').value;
+      const experience = document.getElementById('experience').value;
+      const goal = document.getElementById('goal').value;
+      const weeklyDays = parseInt(document.getElementById('weeklyDays').value);
+      const duration = parseInt(document.getElementById('duration').value);
+
+      // Validate inputs
+      if(!age || !height || !weight) {
+        showAlert("신체 정보(나이, 키, 몸무게)를 올바르게 입력해주세요.");
+        return;
+      }
+      hideAlert();
+
+      // Selected Techniques
+      const selectedTechs = [];
+      if(document.getElementById('tech-straight').checked) selectedTechs.push('일반 세트');
+      if(document.getElementById('tech-drop').checked) selectedTechs.push('드롭세트');
+      if(document.getElementById('tech-super').checked) selectedTechs.push('슈퍼세트');
+      if(document.getElementById('tech-compound').checked) selectedTechs.push('컴파운드 세트');
+
+      if(selectedTechs.length === 0) {
+        showAlert("최소 하나 이상의 운동 테크닉 방식을 선택해주세요.");
+        return;
+      }
+
+      // Save Profile State
+      appState.profile = { age, height, weight, bodyType, experience, goal, weeklyDays, duration, selectedTechs };
+
+      // Experience multiplier for weights
+      let weightMult = 0.7;
+      let setMultiplier = 3;
+      if (experience === 'intermediate') { weightMult = 1.0; setMultiplier = 4; }
+      if (experience === 'advanced') { weightMult = 1.3; setMultiplier = 4; }
+
+      // Adjust sets according to time limit
+      if (duration === 40) setMultiplier = Math.max(2, setMultiplier - 1);
+      if (duration === 90) setMultiplier += 1;
+
+      // Select Target Muscles for "Today's Split"
+      let selectedExercises = [];
+      // Combine exercises across multiple targeted muscle groups
+      selectedExercises.push(getAdjustedExercise(exerciseDB.chest[0], weightMult, setMultiplier, goal));
+      selectedExercises.push(getAdjustedExercise(exerciseDB.back[0], weightMult, setMultiplier, goal));
+      selectedExercises.push(getAdjustedExercise(exerciseDB.shoulder[0], weightMult, setMultiplier, goal));
+      selectedExercises.push(getAdjustedExercise(exerciseDB.quads[0], weightMult, setMultiplier, goal));
+      selectedExercises.push(getAdjustedExercise(exerciseDB.biceps[0], weightMult, setMultiplier, goal));
+      selectedExercises.push(getAdjustedExercise(exerciseDB.calves_core[1], weightMult, setMultiplier, goal));
+
+      // Calculate total duration calculation
+      let totalTimeMinutes = 0;
+      selectedExercises.forEach(ex => {
+        const timePerSetSec = 45 + ex.restSec;
+        totalTimeMinutes += Math.round((ex.sets * timePerSetSec) / 60);
+      });
+
+      appState.currentRoutine = {
+        date: new Date().toLocaleDateString('ko-KR'),
+        targetDuration: duration,
+        estimatedTime: totalTimeMinutes,
+        exercises: selectedExercises
+      };
+
+      saveLocalStorage();
+      renderRoutine();
+      renderDiet();
+      switchTab('tab-routine');
+    }
+
+    function getAdjustedExercise(item, mult, sets, goal) {
+      let weight = Math.round(item.baseWeight * mult);
+      let reps = item.baseReps;
+      if(goal === 'strength') { reps = 6; weight = Math.round(weight * 1.2); }
+      if(goal === 'fatloss') { reps = 15; weight = Math.round(weight * 0.85); }
+
+      return {
+        name: item.name,
+        target: item.target,
+        weight: weight,
+        reps: reps,
+        sets: sets,
+        restSec: item.restSec,
+        tech: appState.profile.selectedTechs[Math.floor(Math.random() * appState.profile.selectedTechs.length)]
+      };
+    }
+
+    // Render Generated Routine
+    function renderRoutine() {
+      const container = document.getElementById('routineContainer');
+      const r = appState.currentRoutine;
+
+      if (!r) return;
+
+      let html = `
+        <div class="routine-header">
+          <div>
+            <span class="badge badge-primary" style="margin-bottom:6px;">오늘의 분할 루틴</span>
+            <h2 style="font-size: 1.3rem;">맞춤형 전신/분할 밸런스 루틴</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top:4px;">
+              목표 시간: ${r.targetDuration}분 | <strong style="color:var(--accent-color)">예상 소요 시간: 약 ${r.estimatedTime}분</strong>
+            </p>
+          </div>
+          <button class="btn btn-success" onclick="completeWorkout()" style="width: auto; padding: 10px 18px;">
+            <i class="fa-solid fa-check"></i> 운동 완료 및 기록 저장
+          </button>
+        </div>
+      `;
+
+      r.exercises.forEach((ex, exIdx) => {
+        html += `
+          <div class="card exercise-item">
+            <div class="exercise-title">
+              <span>${ex.name}</span>
+              <span class="badge badge-purple">${ex.target}</span>
+            </div>
+            <div class="exercise-meta">
+              <span><i class="fa-solid fa-fire"></i> 테크닉: <strong>${ex.tech}</strong></span>
+              <span><i class="fa-solid fa-clock"></i> 세트간 휴식: <strong>${ex.restSec}초</strong></span>
+              <span><i class="fa-solid fa-bullseye"></i> 권장: <strong>${ex.weight}kg × ${ex.reps}회 (${ex.sets}세트)</strong></span>
+            </div>
+
+            <table class="set-table">
+              <thead>
+                <tr>
+                  <th>세트</th>
+                  <th>목표 (kg/회)</th>
+                  <th>실제 수행 (kg)</th>
+                  <th>실제 반복 (회)</th>
+                  <th>완료</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        for(let s = 1; s <= ex.sets; s++) {
+          html += `
+            <tr>
+              <td>${s}</td>
+              <td style="color: var(--text-muted);">${ex.weight}kg / ${ex.reps}회</td>
+              <td><input type="number" id="ex_${exIdx}_set_${s}_weight" value="${ex.weight}"></td>
+              <td><input type="number" id="ex_${exIdx}_set_${s}_reps" value="${ex.reps}"></td>
+              <td><input type="checkbox" class="set-check" id="ex_${exIdx}_set_${s}_done" checked></td>
+            </tr>
+          `;
+        }
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Complete Workout & Save Log with Adaptive Progressive Overload
+    function completeWorkout() {
+      if(!appState.currentRoutine) return;
+
+      let totalVolume = 0;
+      let completedSets = 0;
+
+      appState.currentRoutine.exercises.forEach((ex, exIdx) => {
+        for(let s = 1; s <= ex.sets; s++) {
+          const isDone = document.getElementById(`ex_${exIdx}_set_${s}_done`).checked;
+          if(isDone) {
+            const w = parseFloat(document.getElementById(`ex_${exIdx}_set_${s}_weight`).value) || 0;
+            const r = parseInt(document.getElementById(`ex_${exIdx}_set_${s}_reps`).value) || 0;
+            totalVolume += (w * r);
+            completedSets++;
+          }
+        }
+      });
+
+      const logEntry = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('ko-KR') + ' ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}),
+        volume: totalVolume,
+        completedSets: completedSets
+      };
+
+      appState.history.unshift(logEntry);
+      
+      // Auto Progressive Overload adaptation message
+      alert(`🎉 운동 완료! 총 ${totalVolume}kg의 볼륨을 달성했습니다.\n성장 기록이 업데이트 되었으며 다음 운동 시 중량/횟수가 점진적으로 자동 조정됩니다.`);
+
+      saveLocalStorage();
+      switchTab('tab-history');
+    }
+
+    // Render Diet Guide (Growth Focused for Students)
+    function renderDiet() {
+      const p = appState.profile;
+      if (!p) return;
+
+      const dietBadge = document.getElementById('dietTypeBadge');
+      const summaryDiv = document.getElementById('dietSummary');
+      const grid = document.getElementById('dietPlanGrid');
+
+      // Basic BMR calculation (Mifflin-St Jeor)
+      let bmr = (10 * p.weight) + (6.25 * p.height) - (5 * p.age) + 5;
+      let tdee = Math.round(bmr * 1.45); // Moderate activity level
+
+      let targetCal = tdee;
+      let goalText = "일반 균형 식단";
+
+      if(p.goal === 'hypertrophy') {
+        targetCal += 300;
+        goalText = "근육 증가 식단 (잉여 칼로리)";
+        dietBadge.className = "badge badge-success";
+      } else if(p.goal === 'fatloss') {
+        targetCal -= 200; // Safe deficit for teenagers
+        goalText = "안전 체중 관리 식단 (완만한 감량)";
+        dietBadge.className = "badge badge-orange";
+      }
+
+      dietBadge.innerText = goalText;
+
+      const protein = Math.round(p.weight * 1.8);
+      const carbs = Math.round((targetCal * 0.5) / 4);
+      const fats = Math.round((targetCal * 0.25) / 9);
+
+      summaryDiv.innerHTML = `
+        <strong>일일 권장 영양 목표:</strong> 권장 섭취량 <strong>${targetCal} kcal</strong> | 
+        단백질 <strong>${protein}g</strong> | 탄수화물 <strong>${carbs}g</strong> | 지방 <strong>${fats}g</strong>
+      `;
+
+      grid.innerHTML = `
+        <div class="diet-card">
+          <h4><i class="fa-solid fa-sun"></i> 아침 식단 (에너지 충전)</h4>
+          <p style="font-size:0.85rem; color: var(--text-muted);">현미밥 또는 잡곡밥 1공기, 계란후라이 2개, 김치/나물류, 우유 1컵 (200ml)</p>
+        </div>
+        <div class="diet-card">
+          <h4><i class="fa-solid fa-utensils"></i> 점심 식단 (학교 급식/일반식)</h4>
+          <p style="font-size:0.85rem; color: var(--text-muted);">기본 학교 급식 탄수화물 섭취 + 단백질 반찬(제육, 닭고기, 생선) 충분히 intake</p>
+        </div>
+        <div class="diet-card">
+          <h4><i class="fa-solid fa-cookie-bite"></i> 운동 전/후 간식</h4>
+          <p style="font-size:0.85rem; color: var(--text-muted);">운동 전: 바나나 1개 또는 사과 / 운동 후: 삶은 계란 2개 또는 닭가슴살 100g</p>
+        </div>
+        <div class="diet-card">
+          <h4><i class="fa-solid fa-moon"></i> 저녁 식단 (회복식)</h4>
+          <p style="font-size:0.85rem; color: var(--text-muted);">소고기/돼지고기 사태살 또는 닭가슴살 150g, 신선한 샐러드, 고구마 1개</p>
+        </div>
+      `;
+    }
+
+    // Render History Entries
+    function renderHistory() {
+      const list = document.getElementById('historyLogList');
+
+      if(appState.history.length === 
